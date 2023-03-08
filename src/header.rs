@@ -1094,13 +1094,16 @@ pub fn read_header_setup(packet :&[u8], audio_channels :u8, blocksizes :(u8, u8)
 
 	// 1. Read the codebooks
 	let vorbis_codebook_count :u16 = try!(rdr.read_u8()) as u16 + 1;
+        println!("read_header_setup: reading {} the codebooks", vorbis_codebook_count);
+
 	let mut codebooks = Vec::with_capacity(vorbis_codebook_count as usize);
 	for _ in 0 .. vorbis_codebook_count {
 		codebooks.push(try!(read_codebook(&mut rdr)));
 	}
-
+        
 	// 2. Read the time domain transforms
 	let vorbis_time_count :u8 = try!(rdr.read_u6()) + 1;
+        println!("read_header_setup: read the codebooks, now reading {} time counts", vorbis_time_count);
 	for _ in 0 .. vorbis_time_count {
 		if try!(rdr.read_u16()) != 0 {
 			try!(Err(HeaderReadError::HeaderBadFormat));
@@ -1109,6 +1112,7 @@ pub fn read_header_setup(packet :&[u8], audio_channels :u8, blocksizes :(u8, u8)
 
 	// 3. Read the floor values
 	let vorbis_floor_count :u8 = try!(rdr.read_u6()) + 1;
+        println!("read_header_setup: read the time counts, now reading {} floors counts", vorbis_floor_count);
 	let mut floors = Vec::with_capacity(vorbis_floor_count as usize);
 	for _ in 0 .. vorbis_floor_count {
 		floors.push(try!(read_floor(&mut rdr, vorbis_codebook_count, blocksizes)));
@@ -1116,6 +1120,7 @@ pub fn read_header_setup(packet :&[u8], audio_channels :u8, blocksizes :(u8, u8)
 
 	// 4. Read the residue values
 	let vorbis_residue_count :u8 = try!(rdr.read_u6()) + 1;
+        println!("read_header_setup: read the floors, now reading {} residues", vorbis_residue_count);
 	let mut residues = Vec::with_capacity(vorbis_residue_count as usize);
 	for _ in 0 .. vorbis_residue_count {
 		residues.push(try!(read_residue(&mut rdr, &codebooks)));
@@ -1123,6 +1128,7 @@ pub fn read_header_setup(packet :&[u8], audio_channels :u8, blocksizes :(u8, u8)
 
 	// 5. Read the mappings
 	let vorbis_mapping_count :u8 = try!(rdr.read_u6()) + 1;
+        println!("read_header_setup: read the residues, now reading {} mappings", vorbis_mapping_count);
 	let mut mappings = Vec::with_capacity(vorbis_mapping_count as usize);
 	for _ in 0 .. vorbis_mapping_count {
 		mappings.push(try!(read_mapping(& mut rdr,
@@ -1132,6 +1138,7 @@ pub fn read_header_setup(packet :&[u8], audio_channels :u8, blocksizes :(u8, u8)
 
 	// 6. Read the modes
 	let vorbis_mode_count :u8 = try!(rdr.read_u6()) + 1;
+        println!("read_header_setup: read the mappings, now reading {} modes", vorbis_mode_count);
 	let mut modes = Vec::with_capacity(vorbis_mode_count as usize);
 	for _ in 0 .. vorbis_mode_count {
 		modes.push(try!(read_mode_info(& mut rdr, vorbis_mapping_count)));
