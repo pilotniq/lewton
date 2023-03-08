@@ -29,24 +29,33 @@ use samples::{Samples, InterleavedSamples};
 /// and use the `HeadersReader` struct instead.
 pub fn read_headers<'a, T: Read + Seek + 'a>(rdr: &mut PacketReader<T>) ->
 		Result<(HeaderSet, u32), VorbisError> {
+    println!("read_headers: entry");
 	let pck :Packet = try!(rdr.read_packet_expected());
+    println!("read_headers: after read_packet_expected");
 	let ident_hdr = try!(read_header_ident(&pck.data));
+    println!("read_headers: after read_header_ident");
 	let stream_serial = pck.stream_serial();
+    println!("read_headers: after stream_serial");
 
 	let mut pck :Packet = try!(rdr.read_packet_expected());
 	while pck.stream_serial() != stream_serial {
 		pck = try!(rdr.read_packet_expected());
 	}
+    println!("read_headers: after header read loop");
 	let comment_hdr = try!(read_header_comment(&pck.data));
+    println!("read_headers: after header read comment");
 
 	let mut pck :Packet = try!(rdr.read_packet_expected());
 	while pck.stream_serial() != stream_serial {
 		pck = try!(rdr.read_packet_expected());
 	}
+    println!("read_headers: after second header read loop");
 	let setup_hdr = try!(read_header_setup(&pck.data, ident_hdr.audio_channels,
 		(ident_hdr.blocksize_0, ident_hdr.blocksize_1)));
 
+    println!("read_headers: after read_header_setup");
 	rdr.delete_unread_packets();
+    println!("read_headers: after delete unread packets");
 	return Ok(((ident_hdr, comment_hdr, setup_hdr), pck.stream_serial()));
 }
 
@@ -96,6 +105,7 @@ impl<T: Read + Seek> OggStreamReader<T> {
 	/// and use the `HeadersReader` struct instead.
 	pub fn from_ogg_reader(mut rdr :PacketReader<T>) ->
 			Result<Self, VorbisError> {
+                        println!("from_ogg_reader: entry");
 		let ((ident_hdr, comment_hdr, setup_hdr), stream_serial) =
 			try!(read_headers(&mut rdr));
 		return Ok(OggStreamReader {
